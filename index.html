@@ -313,6 +313,34 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
     loadLedger();renderLedger();renderScreenMatrixTable();
 });
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+    // --- START FIREBASE INITIALIZATION ---
+    // PASTE YOUR firebaseConfig OBJECT FROM STEP 1 HERE
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1jO0PS1MPpEDbBdcBgceI7V8z2SzkcDs",
+  authDomain: "daily-blood--stock.firebaseapp.com",
+  projectId: "daily-blood--stock",
+  storageBucket: "daily-blood--stock.firebasestorage.app",
+  messagingSenderId: "616941891913",
+  appId: "1:616941891913:web:4911708ead04c372c92a98",
+  measurementId: "G-VPYZPC6B41
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(); // This 'db' is now your database
+    // --- END FIREBASE INITIALIZATION ---
+    </script>
+
+    <script>
+    let bloodStock = [], nextId = 1; // We will change this
+    // ... all your existing JS code
+    </script>
+</body>
+</html>
 </script>
 </body>
 </html>
