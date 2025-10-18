@@ -153,19 +153,20 @@ h1, h2 { color:#A52A2A; margin-bottom:8px; text-align:center;}
     <tr><th>Bag Number</th><th>Group</th><th>Volume (mL)</th><th>Collection Date</th><th>Expiry Date (42 Days)</th><th>Remarks</th><th>Action</th></tr>
 </thead><tbody id="ledgerBody"></tbody></table>
 <script>
-let bloodStock = [], nextId = 1;
-function saveLedger(){localStorage.setItem('bloodLedgerData', JSON.stringify(bloodStock));}
-function loadLedger(){
-    const savedData = localStorage.getItem('bloodLedgerData');
-    try {
-        bloodStock = savedData ? JSON.parse(savedData) : [];
-        if (!Array.isArray(bloodStock)) bloodStock = [];
-    } catch (e) {
-        bloodStock = [];
-    }
-    const maxId = bloodStock.reduce((m,bag)=>Math.max(m,bag.id||0),0);
-    nextId = maxId+1;
-}
+// This is your MAIN script tag.
+// It goes AFTER the Firebase init script you just added.
+
+// --- 1. GLOBAL VARIABLES ---
+// 'db' is already defined in the script tag above.
+let bloodStock = []; // This will be populated from Firebase
+
+// --- 2. REMOVED/REPLACED FUNCTIONS (No longer needed) ---
+// function saveLedger(){localStorage.setItem('bloodLedgerData', JSON.stringify(bloodStock));}
+// function loadLedger(){ ... }
+// We don't need these. Firebase saves data automatically.
+// We also don't need 'nextId'. Firebase creates unique IDs.
+
+// --- 3. UTILITY FUNCTIONS (Unchanged) ---
 function calculateExpiryDate(dateString){
     const d=new Date(dateString);d.setDate(d.getDate()+42);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -178,7 +179,10 @@ function ddmmyy(dateString){
 function isExpired(expiry){
     const t=new Date(),e=new Date(expiry);e.setHours(23,59,59,999);return t>e;
 }
+
+// --- 4. DATA FUNCTIONS (MODIFIED FOR FIREBASE) ---
 function exportToCSV(){
+    // This function works perfectly as-is!
     if(bloodStock.length===0){alert("The ledger is empty. Nothing to export.");return;}
     const headers = ["Bag Number", "Group", "Volume (mL)", "Collection Date", "Expiry Date", "Remarks"].join(',')+'\n';
     const csvRows = bloodStock.map(bag=>[bag.bagNumber, bag.group, bag.volume,
@@ -188,25 +192,62 @@ function exportToCSV(){
     link.setAttribute("download",`Blood_Stock_Ledger_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);link.click();document.body.removeChild(link);alert("Export complete! Check your downloads folder.");
 }
-function addBag(fullBagNum,group,colDate,volume,remarks){
-    if(!Array.isArray(bloodStock)) bloodStock = [];
+
+// --- MODIFIED addBag ---
+// We make it 'async' to check for duplicates
+async function addBag(fullBagNum,group,colDate,volume,remarks){
     if(bloodStock.length>=80){alert("Stock limit of 80 bags reached. Please remove an expired or used bag before adding a new one.");return;}
-    if(bloodStock.some(b=>b.bagNumber===fullBagNum)){alert(`Bag number ${fullBagNum} already exists in the ledger!`);return;}
+    
+    // Check for duplicates in Firebase
+    try {
+        const snapshot = await db.collection("bags").where("bagNumber", "==", fullBagNum).get();
+        if (!snapshot.empty) {
+            alert(`Bag number ${fullBagNum} already exists in the ledger!`);
+            return;
+        }
+    } catch (error) {
+        console.error("Error checking for duplicate bag: ", error);
+        alert("Error checking for duplicate. Please try again.");
+        return;
+    }
+
     const expiry = calculateExpiryDate(colDate);
-    const newBag={id:nextId++,bagNumber:fullBagNum,group:group,collectionDate:colDate,expiryDate:expiry,volume:volume,remarks:remarks||''};
-    bloodStock.push(newBag);saveLedger();renderLedger();renderScreenMatrixTable();
+    // Note: No 'id' property. Firebase handles it.
+    const newBag={bagNumber:fullBagNum,group:group,collectionDate:colDate,expiryDate:expiry,volume:volume,remarks:remarks||''};
+    
+    // This is the new 'save'. It sends the bag to the cloud.
+    db.collection("bags").add(newBag)
+        .then(() => {
+            // Success! No need to call render. The 'listenForUpdates' function will do it.
+        })
+        .catch(error => {
+            console.error("Error adding bag: ", error);
+            alert("Could not save bag. Check console for errors.");
+        });
 }
+
+// --- MODIFIED deleteBag ---
+// The 'id' is now the unique string ID from Firebase
 function deleteBag(id){
-    if(!Array.isArray(bloodStock)) bloodStock = [];
-    const il=bloodStock.length;
-    bloodStock=bloodStock.filter(b=>b.id!==id);
-    if(bloodStock.length<il){saveLedger();renderLedger();renderScreenMatrixTable();}
+    if (confirm("Are you sure you want to remove this bag?")) {
+        db.collection("bags").doc(id).delete()
+            .catch(error => {
+                console.error("Error removing bag: ", error);
+            });
+        // No need to call render. 'listenForUpdates' will handle it.
+    }
 }
+
+// --- 5. RENDER FUNCTIONS (Almost Unchanged) ---
+// We just need to make sure we get the Firebase ID
 function renderLedger(){
     const ledgerBody=document.getElementById('ledgerBody');ledgerBody.innerHTML='';
     const counts = {'A+':0,'B+':0,'AB+':0,'O+':0,'A-':0,'B-':0,'AB-':0,'O-':0};
     let totalBags=0;
+    
+    // Sort the global bloodStock array
     bloodStock.sort((a,b)=>a.group<b.group?-1:a.group>b.group?1:new Date(a.collectionDate)-new Date(b.collectionDate));
+    
     bloodStock.forEach(bag=>{
         if(counts.hasOwnProperty(bag.group)){counts[bag.group]++; totalBags++;}
         const row=ledgerBody.insertRow();
@@ -218,8 +259,13 @@ function renderLedger(){
         row.insertCell().textContent=ddmmyy(bag.expiryDate);
         row.insertCell().textContent=rem;
         const ac=row.insertCell();const db=document.createElement('button');
-        db.textContent='Remove';db.classList.add('delete-btn');db.onclick=()=>deleteBag(bag.id);ac.appendChild(db);
+        db.textContent='Remove';db.classList.add('delete-btn');
+        // --- KEY CHANGE ---
+        // 'bag.id' is now the Firebase ID we stored
+        db.onclick=()=>deleteBag(bag.id);
+        ac.appendChild(db);
     });
+    
     document.getElementById('totalBagsCount').textContent=totalBags;
     document.getElementById('countA_pos').textContent=counts['A+'];
     document.getElementById('countB_pos').textContent=counts['B+'];
@@ -230,17 +276,21 @@ function renderLedger(){
     document.getElementById('countAB_neg').textContent=counts['AB-'];
     document.getElementById('countO_neg').textContent=counts['O-'];
 }
+
 function renderScreenMatrixTable(){
     const pos = ["A+","B+","O+","AB+"], neg = ["A-","B-","O-","AB-"];
     let byPos={},byNeg={};pos.forEach(g=>byPos[g]=[]);neg.forEach(g=>byNeg[g]=[]);
+    
     bloodStock.forEach(b=>{
         if(byPos[b.group])byPos[b.group].push(b);
         if(byNeg[b.group])byNeg[b.group].push(b);
     });
+    
     for(let g of pos)byPos[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
     for(let g of neg)byNeg[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
     const pmax=Math.max(...pos.map(g=>byPos[g].length)), nmax=Math.max(...neg.map(g=>byNeg[g].length));
     const mbp=document.getElementById('screenMatrixBodyPos'),mbn=document.getElementById('screenMatrixBodyNeg');mbp.innerHTML='';mbn.innerHTML='';
+    
     for(let i=0;i<pmax;++i){
         const row=document.createElement('tr');
         for(let ki=0;ki<pos.length;++ki){
@@ -255,6 +305,8 @@ function renderScreenMatrixTable(){
                         const btn = document.createElement('button');
                         btn.textContent="Remove";
                         btn.className="remove-btn-matrix";
+                        // --- KEY CHANGE ---
+                        // 'b.id' is the Firebase ID
                         btn.onclick=()=>deleteBag(b.id);
                         td.appendChild(btn);
                     }
@@ -281,6 +333,8 @@ function renderScreenMatrixTable(){
                         const btn = document.createElement('button');
                         btn.textContent="Remove";
                         btn.className="remove-btn-matrix";
+                        // --- KEY CHANGE ---
+                        // 'b.id' is the Firebase ID
                         btn.onclick=()=>deleteBag(b.id);
                         td.appendChild(btn);
                     }
@@ -294,53 +348,53 @@ function renderScreenMatrixTable(){
         mbn.appendChild(row);
     }
 }
+
+// --- 6. NEW REAL-TIME LISTENER ---
+// This function replaces 'loadLedger' and runs forever
+function listenForUpdates() {
+    db.collection("bags").onSnapshot(snapshot => {
+        bloodStock = []; // Clear the local array
+        snapshot.forEach(doc => {
+            const bag = doc.data();
+            // --- KEY CHANGE ---
+            // Store the Firebase doc ID on the bag object
+            bag.id = doc.id; 
+            bloodStock.push(bag);
+        });
+        
+        // Now that bloodStock is updated, re-render everything
+        renderLedger();
+        renderScreenMatrixTable();
+    }, error => {
+        console.error("Error listening for updates: ", error);
+    });
+}
+
+// --- 7. EVENT LISTENERS (MODIFIED) ---
 window.onbeforeprint=()=>{
     renderScreenMatrixTable();
     document.getElementById("printDateStock").style.display="block";
 };
+
 document.addEventListener('DOMContentLoaded',()=>{
     const today=new Date(),fd=today.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
     document.getElementById('printDateStock').textContent=`Stock Date: ${fd}`;
     const dateInput=document.getElementById('collectionDate'),yyyy=today.getFullYear(),mm=String(today.getMonth()+1).padStart(2,'0'),dd=String(today.getDate()).padStart(2,'0');dateInput.value=`${yyyy}-${mm}-${dd}`;
+    
     document.getElementById('addBagForm').addEventListener('submit',function(event){
         event.preventDefault();
         const prefix=document.getElementById('bagPrefix').value,number=document.getElementById('bagNumber').value.trim(),fullBagNum=prefix+number,group=document.getElementById('bloodGroup').value,colDate=document.getElementById('collectionDate').value,volume=parseInt(document.getElementById('volume').value,10),remarks=document.getElementById('remarks').value.trim();
         if(number===""){alert("Please enter a Bag Number.");return;}
+        
+        // This is now an async function
         addBag(fullBagNum,group,colDate,volume,remarks);
+        
         document.getElementById('bagNumber').value='';
         document.getElementById('remarks').value='';
         document.getElementById('bagNumber').focus();
     });
-    loadLedger();renderLedger();renderScreenMatrixTable();
+    
+    // --- KEY CHANGE ---
+    // Instead of loadLedger(), we start the real-time listener
+    listenForUpdates();
 });
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
-    <script>
-    // --- START FIREBASE INITIALIZATION ---
-    // PASTE YOUR firebaseConfig OBJECT FROM STEP 1 HERE
-    const firebaseConfig = {
-      apiKey: "AIzaSyB1jO0PS1MPpEDbBdcBgceI7V8z2SzkcDs",
-  authDomain: "daily-blood--stock.firebaseapp.com",
-  projectId: "daily-blood--stock",
-  storageBucket: "daily-blood--stock.firebasestorage.app",
-  messagingSenderId: "616941891913",
-  appId: "1:616941891913:web:4911708ead04c372c92a98",
-  measurementId: "G-VPYZPC6B41
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(); // This 'db' is now your database
-    // --- END FIREBASE INITIALIZATION ---
-    </script>
-
-    <script>
-    let bloodStock = [], nextId = 1; // We will change this
-    // ... all your existing JS code
-    </script>
-</body>
-</html>
-</script>
-</body>
-</html>
