@@ -2,55 +2,71 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Blood Stock Ledger — Matrix Display & Print with Remove</title>
+<title>Blood Stock Ledger — Matrix Display & Print</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: Arial,sans-serif; margin:15px; color:#333; font-size:14px; text-align:center;}
-h1, h2 { color:#A52A2A; margin-bottom:8px; text-align:center;}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; margin:15px; color:#333; font-size:14px; text-align:center; background-color: #f7fafc;}
+h1, h2 { color:#2c5282; margin-bottom:8px; text-align:center;}
+h1 { font-size: 1.8em; }
 .summary-container {
     margin: 0 auto 15px auto;
-    width: fit-content;
-    border: 2px solid #A52A2A;
-    padding: 8px;
+    max-width: 950px;
+    border: 1px solid #bee3f8;
+    padding: 15px;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
-    background-color: #fcebeb;
-    border-radius: 5px;
+    justify-content: center;
+    gap: 10px;
+    background-color: #ebf8ff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(49, 130, 206, 0.1), 0 2px 4px -1px rgba(49, 130, 206, 0.06);
 }
 .summary-item {
     text-align: center;
-    font-size: 1em;
+    font-size: 0.9em;
     font-weight: bold;
-    padding: 5px 12px;
-    min-width: 58px;
+    padding: 4px 10px;
+    min-width: 55px;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #bee3f8;
 }
-#addBagForm {margin:0 auto 20px auto; display: flex; gap:10px; padding:15px; border:1px solid #A52A2A; border-radius:5px; background-color:#fffafa; align-items:flex-end; flex-wrap:wrap; justify-content:center;}
+
+/* View Specific Styles */
+#adminView { display: block; }
+#publicView { display: none; } /* Hidden by default */
+.view-info { padding: 10px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 5px; margin: 0 auto 15px auto; max-width: 600px; }
+
+/* Form and Button Styles */
+#addBagForm {margin:0 auto 20px auto; display: flex; gap:10px; padding:15px; border:1px solid #e2e8f0; border-radius:8px; background-color:#fff; align-items:flex-end; flex-wrap:wrap; justify-content:center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
 #addBagForm div{ display:flex; flex-direction:column; text-align:left;}
 #addBagForm label{font-weight:bold; margin-bottom:4px;font-size:0.9em;}
-#addBagForm input, #addBagForm select, #addBagForm button {padding:8px;font-size:1em;}
-#addBagForm button{background-color:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;}
-#exportButton {background-color:#007bff; color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; font-weight:bold; margin-bottom:15px;}
-.matrix-thick-right { border-right: 3.1px double #700 !important; }
-.matrix-thick-left { border-left: 3.1px double #700 !important; }
-.group-header { background:#a52a2a; color:#fff; letter-spacing:2px; border-bottom:2px solid #600; font-size:1em; }
-.sub-header { background:#e5b4b4; font-weight:bold; }
-#screenMatrixTable { width:100%; border-collapse:collapse; margin-bottom:18px;}
-#screenMatrixTable th, #screenMatrixTable td { border:1.2px solid #333; padding:3px 8px;text-align:center;}
-.remove-btn-matrix { background:#f44336; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:0.89em; padding:2px 9px; margin-left:5px; }
+#addBagForm input, #addBagForm select, #addBagForm button {padding:8px;font-size:1em; border-radius: 4px; border: 1px solid #ccc;}
+#addBagForm button{background-color:#38a169;color:white;border:none;cursor:pointer;font-weight:bold; transition: background-color 0.3s;}
+#addBagForm button:hover { background-color: #2f855a; }
+#exportButton {background-color:#4299e1; color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; font-weight:bold; margin-bottom:15px; transition: background-color 0.3s;}
+#exportButton:hover { background-color: #3182ce; }
+
+/* Table Styles */
+.matrix-thick-right { border-right: 3.1px double #1a365d !important; }
+.matrix-thick-left { border-left: 3.1px double #1a365d !important; }
+.group-header { background:#2c5282; color:#fff; letter-spacing:2px; border-bottom:2px solid #1a365d; font-size:1em; }
+.sub-header { background:#bee3f8; font-weight:bold; }
+.matrixTable { width:100%; border-collapse:collapse; margin-bottom:18px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+.matrixTable th, .matrixTable td { border:1.2px solid #333; padding:3px 8px;text-align:center;}
+.remove-btn-matrix { background:#e53e3e; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:0.89em; padding:2px 9px; margin-left:5px; }
 @media print {
     .remove-btn-matrix { display:none!important;}
 }
 #ledgerTable{ display:none;}
-#printDateStock{ display:block; font-size:1em; font-weight:bold; color:#700; margin-bottom:8px; text-align:center;}
+#printDateStock{ display:block; font-size:1em; font-weight:bold; color:#2c5282; margin-bottom:8px; text-align:center;}
+
 @media print {
     @page { size:A4 landscape; margin:8mm;}
     body{margin:0; font-size:10pt;text-align:left; background: white;}
-    #addBagForm,.delete-btn,#exportButton,#ledgerTable,h2{display:none!important;}
+    #addBagForm,.delete-btn,#exportButton,#ledgerTable,h2, #publicView, .view-info{display:none!important;}
     #screenMatrixTable{ display:table!important;width:100%;margin:0;table-layout:fixed;border-collapse:collapse;font-size:0.97em;}
     #screenMatrixTable th, #screenMatrixTable td{border:1px solid #333;padding:2px 5px;text-align:center;}
-    #screenMatrixTable th.group-header{}
-    #screenMatrixTable th.sub-header{}
     .matrix-thick-right { border-right: 3.8px double #700 !important;}
     .matrix-thick-left { border-left: 3.8px double #700 !important;}
     .summary-container{ display: flex !important; margin: 10px auto 14px auto; border:2px solid #a52a2a; background:#fcdfdf;}
@@ -73,356 +89,343 @@ h1, h2 { color:#A52A2A; margin-bottom:8px; text-align:center;}
     <div class="summary-item">O-: <span id="countO_neg">0</span></div>
     <div class="summary-item">AB-: <span id="countAB_neg">0</span></div>
 </div>
-<form id="addBagForm">
-    <div><label for="bagPrefix">Source</label>
-        <select id="bagPrefix" required><option value="C-">C-</option><option value="I-">I-</option></select></div>
-    <div><label for="bagNumber">Bag No.</label>
-        <input type="text" id="bagNumber" required></div>
-    <div><label for="bloodGroup">Blood Group</label>
-        <select id="bloodGroup" required>
-            <option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
-            <option value="O+">O+</option><option value="A-">A-</option><option value="B-">B-</option>
-            <option value="AB-">AB-</option><option value="O-">O-</option>
-        </select></div>
-    <div><label for="collectionDate">Collection Date</label>
-        <input type="date" id="collectionDate" required></div>
-    <div><label for="volume">Volume (mL)</label>
-        <input type="number" id="volume" min="100" max="500" value="350" required></div>
-    <div><label for="remarks">Remarks</label>
-        <input type="text" id="remarks" placeholder="Optional notes"></div>
-    <button type="submit">Add Bag</button>
-</form>
-<button id="exportButton" onclick="exportToCSV()">Export to Excel (CSV)</button>
-<table id="screenMatrixTable">
-    <thead>
-        <tr>
-            <th colspan="4" class="group-header matrix-thick-left">A+</th>
-            <th colspan="4" class="group-header matrix-thick-left">B+</th>
-            <th colspan="4" class="group-header matrix-thick-left">O+</th>
-            <th colspan="4" class="group-header matrix-thick-left matrix-thick-right">AB+</th>
-        </tr>
-        <tr>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header">Vol.</th>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header">Vol.</th>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header">Vol.</th>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header matrix-thick-right">Vol.</th>
-        </tr>
-    </thead>
-    <tbody id="screenMatrixBodyPos"></tbody>
-    <thead>
-        <tr>
-            <th colspan="4" class="group-header matrix-thick-left">A-</th>
-            <th colspan="4" class="group-header matrix-thick-left">B-</th>
-            <th colspan="4" class="group-header matrix-thick-left">O-</th>
-            <th colspan="4" class="group-header matrix-thick-left matrix-thick-right">AB-</th>
-        </tr>
-        <tr>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header">Vol.</th>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header">Vol.</th>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header">Vol.</th>
-            <th class="sub-header matrix-thick-left">Bag No.</th>
-            <th class="sub-header">Collection</th>
-            <th class="sub-header">Expiry</th>
-            <th class="sub-header matrix-thick-right">Vol.</th>
-        </tr>
-    </thead>
-    <tbody id="screenMatrixBodyNeg"></tbody>
-</table>
+
+<!-- ADMIN VIEW -->
+<div id="adminView">
+    <form id="addBagForm">
+        <div><label for="bagPrefix">Source</label>
+            <select id="bagPrefix" required><option value="C-">C-</option><option value="I-">I-</option></select></div>
+        <div><label for="bagNumber">Bag No.</label>
+            <input type="text" id="bagNumber" required></div>
+        <div><label for="bloodGroup">Blood Group</label>
+            <select id="bloodGroup" required>
+                <option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                <option value="O+">O+</option><option value="A-">A-</option><option value="B-">B-</option>
+                <option value="AB-">AB-</option><option value="O-">O-</option>
+            </select></div>
+        <div><label for="collectionDate">Collection Date</label>
+            <input type="date" id="collectionDate" required></div>
+        <div><label for="volume">Volume (mL)</label>
+            <input type="number" id="volume" min="100" max="500" value="350" required></div>
+        <div><label for="remarks">Remarks</label>
+            <input type="text" id="remarks" placeholder="Optional notes"></div>
+        <button type="submit">Add Bag</button>
+    </form>
+    <button id="exportButton" onclick="exportToCSV()">Export to Excel (CSV)</button>
+    <table id="screenMatrixTable" class="matrixTable">
+        <!-- Admin table content will be generated by JS -->
+    </table>
+</div>
+
+<!-- PUBLIC VIEW -->
+<div id="publicView">
+    <div class="view-info">This is a public, read-only view of the current blood stock.</div>
+    <table id="publicMatrixTable" class="matrixTable">
+        <!-- Public table content will be generated by JS -->
+    </table>
+</div>
+
+<!-- Hidden table for CSV export logic -->
 <table id="ledgerTable"><thead>
     <tr><th>Bag Number</th><th>Group</th><th>Volume (mL)</th><th>Collection Date</th><th>Expiry Date (42 Days)</th><th>Remarks</th><th>Action</th></tr>
 </thead><tbody id="ledgerBody"></tbody></table>
 
-    <!-- Add these new scripts for Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script>
+// --- START FIREBASE INITIALIZATION ---
+// PASTE YOUR firebaseConfig OBJECT FROM THE FIREBASE CONSOLE HERE
+const firebaseConfig = {
+  apiKey: "AIzaSyB1jO0PS1MPpEDbBdcBgceI7V8z2SzkcDs",
+  authDomain: "daily-blood--stock.firebaseapp.com",
+  projectId: "daily-blood--stock",
+  storageBucket: "daily-blood--stock.appspot.com",
+  messagingSenderId: "616941891913",
+  appId: "1:616941891913:web:4911708ead04c372c92a98",
+  measurementId: "G-VPYZPC6B41"
+};
 
-    <script>
-    // --- START FIREBASE INITIALIZATION ---
-    // This is YOUR specific configuration code.
-    const firebaseConfig = {
-      apiKey: "AIzaSyB1jO0PS1MPpEDbBdcBgceI7V8z2SzkcDs",
-      authDomain: "daily-blood--stock.firebaseapp.com",
-      projectId: "daily-blood--stock",
-      storageBucket: "daily-blood--stock.firebasestorage.app",
-      messagingSenderId: "616941891913",
-      appId: "1:616941891913:web:4911708ead04c372c92a98",
-      measurementId: "G-VPYZPC6B41"
-    };
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+// --- END FIREBASE INITIALIZATION ---
+</script>
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(); // This 'db' is now your database
-    // --- END FIREBASE INITIALIZATION ---
-    </script>
+<script>
+// --- GLOBAL VARIABLES ---
+let bloodStock = []; // This will be populated from Firebase
 
-    <!-- Your existing script tag is below -->
-    <script>
-    // This is your MAIN script tag.
-    // It goes AFTER the Firebase init script you just added.
+// --- UTILITY FUNCTIONS ---
+function calculateExpiryDate(dateString) {
+    const d = new Date(dateString);
+    d.setDate(d.getDate() + 42);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function ddmmyy(dateString) {
+    if (!dateString) return '';
+    let [y, m, d] = dateString.split('-');
+    if (y.length == 4) return `${d}-${m}-${y.slice(-2)}`;
+    return dateString;
+}
+function isExpired(expiry) {
+    const t = new Date(), e = new Date(expiry);
+    e.setHours(23, 59, 59, 999);
+    return t > e;
+}
 
-    // --- 1. GLOBAL VARIABLES ---
-    // 'db' is already defined in the script tag above.
-    let bloodStock = []; // This will be populated from Firebase
+// --- DATA FUNCTIONS ---
+function exportToCSV() {
+    if (bloodStock.length === 0) { alert("The ledger is empty. Nothing to export."); return; }
+    const headers = ["Bag Number", "Group", "Volume (mL)", "Collection Date", "Expiry Date", "Remarks"].join(',') + '\n';
+    const csvRows = bloodStock.map(bag => [bag.bagNumber, bag.group, bag.volume,
+    ddmmyy(bag.collectionDate), ddmmyy(bag.expiryDate), bag.remarks ? `"${bag.remarks.replace(/"/g, '""').replace(/\n/g, ' ')}"` : ''].join(',')).join('\n');
+    const c = headers + csvRows;
+    const u = encodeURI("data:text/csv;charset=utf-8," + c);
+    const link = document.createElement("a");
+    link.setAttribute("href", u);
+    link.setAttribute("download", `Blood_Stock_Ledger_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    alert("Export complete! Check your downloads folder.");
+}
 
-    // --- 2. REMOVED/REPLACED FUNCTIONS (No longer needed) ---
-    // function saveLedger(){localStorage.setItem('bloodLedgerData', JSON.stringify(bloodStock));}
-    // function loadLedger(){ ... }
-    // We don't need these. Firebase saves data automatically.
-    // We also don't need 'nextId'. Firebase creates unique IDs.
-
-    // --- 3. UTILITY FUNCTIONS (Unchanged) ---
-    function calculateExpiryDate(dateString){
-        const d=new Date(dateString);d.setDate(d.getDate()+42);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-    function ddmmyy(dateString){
-        if(!dateString)return'';let[d1,d2,d3]=dateString.split('-');
-        if(d1.length==4)return`${d3}-${d2}-${d1.slice(-2)}`;
-        return dateString;
-    }
-    function isExpired(expiry){
-        const t=new Date(),e=new Date(expiry);e.setHours(23,59,59,999);return t>e;
-    }
-
-    // --- 4. DATA FUNCTIONS (MODIFIED FOR FIREBASE) ---
-    function exportToCSV(){
-        // This function works perfectly as-is!
-        if(bloodStock.length===0){alert("The ledger is empty. Nothing to export.");return;}
-        const headers = ["Bag Number", "Group", "Volume (mL)", "Collection Date", "Expiry Date", "Remarks"].join(',')+'\n';
-        const csvRows = bloodStock.map(bag=>[bag.bagNumber, bag.group, bag.volume,
-            ddmmyy(bag.collectionDate),ddmmyy(bag.expiryDate), bag.remarks?`"${bag.remarks.replace(/"/g,'""').replace(/\n/g,' ')}"`:''].join(',')).join('\n');
-        const c = headers+csvRows;const u=encodeURI("data:text/csv;charset=utf-8,"+c);
-        const link=document.createElement("a");link.setAttribute("href",u);
-        link.setAttribute("download",`Blood_Stock_Ledger_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);link.click();document.body.removeChild(link);alert("Export complete! Check your downloads folder.");
-    }
-
-    // --- MODIFIED addBag ---
-    // We make it 'async' to check for duplicates
-    async function addBag(fullBagNum,group,colDate,volume,remarks){
-        if(bloodStock.length>=80){alert("Stock limit of 80 bags reached. Please remove an expired or used bag before adding a new one.");return;}
-        
-        // Check for duplicates in Firebase
-        try {
-            const snapshot = await db.collection("bags").where("bagNumber", "==", fullBagNum).get();
-            if (!snapshot.empty) {
-                alert(`Bag number ${fullBagNum} already exists in the ledger!`);
-                return;
-            }
-        } catch (error) {
-            console.error("Error checking for duplicate bag: ", error);
-            alert("Error checking for duplicate. Please try again.");
+async function addBag(fullBagNum, group, colDate, volume, remarks) {
+    if (bloodStock.length >= 80) { alert("Stock limit of 80 bags reached. Please remove an expired or used bag before adding a new one."); return; }
+    try {
+        const snapshot = await db.collection("bags").where("bagNumber", "==", fullBagNum).get();
+        if (!snapshot.empty) {
+            alert(`Bag number ${fullBagNum} already exists in the ledger!`);
             return;
         }
-
-        const expiry = calculateExpiryDate(colDate);
-        // Note: No 'id' property. Firebase handles it.
-        const newBag={bagNumber:fullBagNum,group:group,collectionDate:colDate,expiryDate:expiry,volume:volume,remarks:remarks||''};
-        
-        // This is the new 'save'. It sends the bag to the cloud.
-        db.collection("bags").add(newBag)
-            .then(() => {
-                // Success! No need to call render. The 'listenForUpdates' function will do it.
-            })
-            .catch(error => {
-                console.error("Error adding bag: ", error);
-                alert("Could not save bag. Check console for errors.");
-            });
+    } catch (error) {
+        console.error("Error checking for duplicate bag: ", error);
+        alert("Error checking for duplicate. Please try again.");
+        return;
     }
+    const expiry = calculateExpiryDate(colDate);
+    const newBag = { bagNumber: fullBagNum, group: group, collectionDate: colDate, expiryDate: expiry, volume: volume, remarks: remarks || '' };
+    db.collection("bags").add(newBag).catch(error => console.error("Error adding bag: ", error));
+}
 
-    // --- MODIFIED deleteBag ---
-    // The 'id' is now the unique string ID from Firebase
-    function deleteBag(id){
-        if (confirm("Are you sure you want to remove this bag?")) {
-            db.collection("bags").doc(id).delete()
-                .catch(error => {
-                    console.error("Error removing bag: ", error);
-                });
-            // No need to call render. 'listenForUpdates' will handle it.
-        }
+function deleteBag(id) {
+    if (confirm("Are you sure you want to remove this bag?")) {
+        db.collection("bags").doc(id).delete().catch(error => console.error("Error removing bag: ", error));
     }
+}
 
-    // --- 5. RENDER FUNCTIONS (Almost Unchanged) ---
-    // We just need to make sure we get the Firebase ID
-    function renderLedger(){
-        const ledgerBody=document.getElementById('ledgerBody');ledgerBody.innerHTML='';
-        const counts = {'A+':0,'B+':0,'AB+':0,'O+':0,'A-':0,'B-':0,'AB-':0,'O-':0};
-        let totalBags=0;
-        
-        // Sort the global bloodStock array
-        bloodStock.sort((a,b)=>a.group<b.group?-1:a.group>b.group?1:new Date(a.collectionDate)-new Date(b.collectionDate));
-        
-        bloodStock.forEach(bag=>{
-            if(counts.hasOwnProperty(bag.group)){counts[bag.group]++; totalBags++;}
-            const row=ledgerBody.insertRow();
-            let rem=bag.remarks;if(isExpired(bag.expiryDate)){row.classList.add('expired');if(!bag.remarks)rem='EXPIRED';}
-            row.insertCell().textContent=bag.bagNumber;
-            row.insertCell().textContent=bag.group;
-            row.insertCell().textContent=bag.volume;
-            row.insertCell().textContent=ddmmyy(bag.collectionDate);
-            row.insertCell().textContent=ddmmyy(bag.expiryDate);
-            row.insertCell().textContent=rem;
-            const ac=row.insertCell();const db=document.createElement('button');
-            db.textContent='Remove';db.classList.add('delete-btn');
-            // --- KEY CHANGE ---
-            // 'bag.id' is now the Firebase ID we stored
-            db.onclick=()=>deleteBag(bag.id);
-            ac.appendChild(db);
-        });
-        
-        document.getElementById('totalBagsCount').textContent=totalBags;
-        document.getElementById('countA_pos').textContent=counts['A+'];
-        document.getElementById('countB_pos').textContent=counts['B+'];
-        document.getElementById('countAB_pos').textContent=counts['AB+'];
-        document.getElementById('countO_pos').textContent=counts['O+'];
-        document.getElementById('countA_neg').textContent=counts['A-'];
-        document.getElementById('countB_neg').textContent=counts['B-'];
-        document.getElementById('countAB_neg').textContent=counts['AB-'];
-        document.getElementById('countO_neg').textContent=counts['O-'];
-    }
+// --- RENDER FUNCTIONS ---
+function updateSummaryBadges(stock) {
+    const counts = { 'A+': 0, 'B+': 0, 'AB+': 0, 'O+': 0, 'A-': 0, 'B-': 0, 'AB-': 0, 'O-': 0 };
+    stock.forEach(bag => { if (counts.hasOwnProperty(bag.group)) { counts[bag.group]++; } });
+    document.getElementById('totalBagsCount').textContent = stock.length;
+    document.getElementById('countA_pos').textContent = counts['A+'];
+    document.getElementById('countB_pos').textContent = counts['B+'];
+    document.getElementById('countAB_pos').textContent = counts['AB+'];
+    document.getElementById('countO_pos').textContent = counts['O+'];
+    document.getElementById('countA_neg').textContent = counts['A-'];
+    document.getElementById('countB_neg').textContent = counts['B-'];
+    document.getElementById('countAB_neg').textContent = counts['AB-'];
+    document.getElementById('countO_neg').textContent = counts['O-'];
+}
 
-    function renderScreenMatrixTable(){
-        const pos = ["A+","B+","O+","AB+"], neg = ["A-","B-","O-","AB-"];
-        let byPos={},byNeg={};pos.forEach(g=>byPos[g]=[]);neg.forEach(g=>byNeg[g]=[]);
-        
-        bloodStock.forEach(b=>{
-            if(byPos[b.group])byPos[b.group].push(b);
-            if(byNeg[b.group])byNeg[b.group].push(b);
-        });
-        
-        for(let g of pos)byPos[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
-        for(let g of neg)byNeg[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
-        const pmax=Math.max(...pos.map(g=>byPos[g].length)), nmax=Math.max(...neg.map(g=>byNeg[g].length));
-        const mbp=document.getElementById('screenMatrixBodyPos'),mbn=document.getElementById('screenMatrixBodyNeg');mbp.innerHTML='';mbn.innerHTML='';
-        
-        for(let i=0;i<pmax;++i){
-            const row=document.createElement('tr');
-            for(let ki=0;ki<pos.length;++ki){
-                const g=pos[ki]; const b=byPos[g][i];
-                for(let k=0;k<4;++k){
-                    let td=document.createElement('td');
-                    if(k===0)td.className+='matrix-thick-left ';
-                    if(ki===pos.length-1 && k===3)td.className+='matrix-thick-right ';
-                    if(b){
-                        if(k==0){
-                            td.textContent=b.bagNumber;
-                            const btn = document.createElement('button');
-                            btn.textContent="Remove";
-                            btn.className="remove-btn-matrix";
-                            // --- KEY CHANGE ---
-                            // 'b.id' is the Firebase ID
-                            btn.onclick=()=>deleteBag(b.id);
-                            td.appendChild(btn);
-                        }
-                        else if(k==1)td.textContent=ddmmyy(b.collectionDate);
-                        else if(k==2)td.textContent=ddmmyy(b.expiryDate);
-                        else if(k==3)td.textContent=b.volume;
-                    }else{td.textContent='';}
-                    row.appendChild(td);
+function renderAdminMatrix(stock) {
+    const container = document.getElementById('screenMatrixTable');
+    container.innerHTML = `
+        <thead>
+            <tr>
+                <th colspan="4" class="group-header matrix-thick-left">A+</th>
+                <th colspan="4" class="group-header matrix-thick-left">B+</th>
+                <th colspan="4" class="group-header matrix-thick-left">O+</th>
+                <th colspan="4" class="group-header matrix-thick-left matrix-thick-right">AB+</th>
+            </tr>
+            <tr>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header">Vol.</th>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header">Vol.</th>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header">Vol.</th>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header matrix-thick-right">Vol.</th>
+            </tr>
+        </thead>
+        <tbody id="screenMatrixBodyPos"></tbody>
+        <thead>
+            <tr>
+                <th colspan="4" class="group-header matrix-thick-left">A-</th>
+                <th colspan="4" class="group-header matrix-thick-left">B-</th>
+                <th colspan="4" class="group-header matrix-thick-left">O-</th>
+                <th colspan="4" class="group-header matrix-thick-left matrix-thick-right">AB-</th>
+            </tr>
+            <tr>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header">Vol.</th>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header">Vol.</th>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header">Vol.</th>
+                <th class="sub-header matrix-thick-left">Bag No.</th><th class="sub-header">Collection</th><th class="sub-header">Expiry</th><th class="sub-header matrix-thick-right">Vol.</th>
+            </tr>
+        </thead>
+        <tbody id="screenMatrixBodyNeg"></tbody>
+    `;
+    const pos = ["A+","B+","O+","AB+"], neg = ["A-","B-","O-","AB-"];
+    let byPos={},byNeg={};pos.forEach(g=>byPos[g]=[]);neg.forEach(g=>byNeg[g]=[]);
+    stock.forEach(b=>{ if(byPos[b.group])byPos[b.group].push(b); if(byNeg[b.group])byNeg[b.group].push(b); });
+    for(let g of pos)byPos[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
+    for(let g of neg)byNeg[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
+    const pmax=Math.max(...pos.map(g=>byPos[g].length)), nmax=Math.max(...neg.map(g=>byNeg[g].length));
+    const mbp=document.getElementById('screenMatrixBodyPos'),mbn=document.getElementById('screenMatrixBodyNeg');
+
+    for(let i=0;i<pmax;++i){
+        const row=document.createElement('tr');
+        pos.forEach((g, ki) => {
+            const b = byPos[g][i];
+            for (let k = 0; k < 4; ++k) {
+                let td = document.createElement('td');
+                if (k === 0) td.className += 'matrix-thick-left ';
+                if (ki === pos.length - 1 && k === 3) td.className += 'matrix-thick-right ';
+                if (b) {
+                    if (k == 0) { td.textContent = b.bagNumber; const btn = document.createElement('button'); btn.textContent = "X"; btn.className = "remove-btn-matrix"; btn.onclick = () => deleteBag(b.id); td.appendChild(btn); }
+                    else if (k == 1) td.textContent = ddmmyy(b.collectionDate);
+                    else if (k == 2) td.textContent = ddmmyy(b.expiryDate);
+                    else if (k == 3) td.textContent = b.volume;
                 }
+                row.appendChild(td);
             }
-            mbp.appendChild(row);
-        }
-        for(let i=0;i<nmax;++i){
-            const row=document.createElement('tr');
-            for(let ki=0;ki<neg.length;++ki){
-                const g=neg[ki]; const b=byNeg[g][i];
-                for(let k=0;k<4;++k){
-                    let td=document.createElement('td');
-                    if(k===0)td.className+='matrix-thick-left ';
-                    if(ki===neg.length-1 && k===3)td.className+='matrix-thick-right ';
-                    if(b){
-                        if(k==0){
-                            td.textContent=b.bagNumber;
-                            const btn = document.createElement('button');
-                            btn.textContent="Remove";
-                            btn.className="remove-btn-matrix";
-                            // --- KEY CHANGE ---
-                            // 'b.id' is the Firebase ID
-                            btn.onclick=()=>deleteBag(b.id);
-                            td.appendChild(btn);
-                        }
-                        else if(k==1)td.textContent=ddmmyy(b.collectionDate);
-                        else if(k==2)td.textContent=ddmmyy(b.expiryDate);
-                        else if(k==3)td.textContent=b.volume;
-                    }else{td.textContent='';}
-                    row.appendChild(td);
-                }
-            }
-            mbn.appendChild(row);
-        }
-    }
-
-    // --- 6. NEW REAL-TIME LISTENER ---
-    // This function replaces 'loadLedger' and runs forever
-    function listenForUpdates() {
-        db.collection("bags").onSnapshot(snapshot => {
-            bloodStock = []; // Clear the local array
-            snapshot.forEach(doc => {
-                const bag = doc.data();
-                // --- KEY CHANGE ---
-                // Store the Firebase doc ID on the bag object
-                bag.id = doc.id; 
-                bloodStock.push(bag);
-            });
-            
-            // Now that bloodStock is updated, re-render everything
-            renderLedger();
-            renderScreenMatrixTable();
-        }, error => {
-            console.error("Error listening for updates: ", error);
         });
+        mbp.appendChild(row);
+    }
+    for(let i=0;i<nmax;++i){
+        const row=document.createElement('tr');
+        neg.forEach((g, ki) => {
+            const b = byNeg[g][i];
+            for (let k = 0; k < 4; ++k) {
+                let td = document.createElement('td');
+                if (k === 0) td.className += 'matrix-thick-left ';
+                if (ki === neg.length - 1 && k === 3) td.className += 'matrix-thick-right ';
+                if (b) {
+                    if (k == 0) { td.textContent = b.bagNumber; const btn = document.createElement('button'); btn.textContent = "X"; btn.className = "remove-btn-matrix"; btn.onclick = () => deleteBag(b.id); td.appendChild(btn); }
+                    else if (k == 1) td.textContent = ddmmyy(b.collectionDate);
+                    else if (k == 2) td.textContent = ddmmyy(b.expiryDate);
+                    else if (k == 3) td.textContent = b.volume;
+                }
+                row.appendChild(td);
+            }
+        });
+        mbn.appendChild(row);
+    }
+}
+
+function renderPublicMatrix(stock) {
+    const container = document.getElementById('publicMatrixTable');
+    container.innerHTML = `
+        <thead>
+            <tr>
+                <th class="group-header matrix-thick-left">A+</th>
+                <th class="group-header matrix-thick-left">B+</th>
+                <th class="group-header matrix-thick-left">O+</th>
+                <th class="group-header matrix-thick-left matrix-thick-right">AB+</th>
+            </tr>
+        </thead>
+        <tbody id="publicMatrixBodyPos"></tbody>
+        <thead>
+            <tr>
+                <th class="group-header matrix-thick-left">A-</th>
+                <th class="group-header matrix-thick-left">B-</th>
+                <th class="group-header matrix-thick-left">O-</th>
+                <th class="group-header matrix-thick-left matrix-thick-right">AB-</th>
+            </tr>
+        </thead>
+        <tbody id="publicMatrixBodyNeg"></tbody>
+    `;
+    const pos = ["A+","B+","O+","AB+"], neg = ["A-","B-","O-","AB-"];
+    let byPos={},byNeg={};pos.forEach(g=>byPos[g]=[]);neg.forEach(g=>byNeg[g]=[]);
+    stock.forEach(b=>{ if(byPos[b.group])byPos[b.group].push(b); if(byNeg[b.group])byNeg[b.group].push(b); });
+    for(let g of pos)byPos[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
+    for(let g of neg)byNeg[g].sort((a,b)=>new Date(a.collectionDate)-new Date(b.collectionDate));
+    const pmax=Math.max(...pos.map(g=>byPos[g].length)), nmax=Math.max(...neg.map(g=>byNeg[g].length));
+    const mbp=document.getElementById('publicMatrixBodyPos'),mbn=document.getElementById('publicMatrixBodyNeg');
+
+    for (let i = 0; i < pmax; ++i) {
+        const row = document.createElement('tr');
+        pos.forEach((g, ki) => {
+            const b = byPos[g][i];
+            let td = document.createElement('td');
+            if (ki === 0) td.className += 'matrix-thick-left ';
+            if (ki === pos.length - 1) td.className += 'matrix-thick-right ';
+            if (b) { td.textContent = b.bagNumber; }
+            row.appendChild(td);
+        });
+        mbp.appendChild(row);
+    }
+    for (let i = 0; i < nmax; ++i) {
+        const row = document.createElement('tr');
+        neg.forEach((g, ki) => {
+            const b = byNeg[g][i];
+            let td = document.createElement('td');
+            if (ki === 0) td.className += 'matrix-thick-left ';
+            if (ki === neg.length - 1) td.className += 'matrix-thick-right ';
+            if (b) { td.textContent = b.bagNumber; }
+            row.appendChild(td);
+        });
+        mbn.appendChild(row);
+    }
+}
+
+
+// --- REAL-TIME LISTENER & INITIALIZATION ---
+function listenForUpdates(isPublicView) {
+    const collectionName = isPublicView ? "bags_public" : "bags";
+    db.collection(collectionName).onSnapshot(snapshot => {
+        let stock = [];
+        snapshot.forEach(doc => {
+            const bag = doc.data();
+            bag.id = doc.id;
+            stock.push(bag);
+        });
+        bloodStock = stock; // Update global stock for CSV export
+        updateSummaryBadges(stock);
+        if (isPublicView) {
+            renderPublicMatrix(stock);
+        } else {
+            renderAdminMatrix(stock);
+        }
+    }, error => console.error("Error listening for updates: ", error));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const isPublic = window.location.hash === '#public';
+
+    if (isPublic) {
+        document.getElementById('adminView').style.display = 'none';
+        document.getElementById('publicView').style.display = 'block';
+    } else {
+        document.getElementById('adminView').style.display = 'block';
+        document.getElementById('publicView').style.display = 'none';
     }
 
-    // --- 7. EVENT LISTENERS (MODIFIED) ---
-    window.onbeforeprint=()=>{
-        renderScreenMatrixTable();
-        document.getElementById("printDateStock").style.display="block";
-    };
-
-    document.addEventListener('DOMContentLoaded',()=>{
-        const today=new Date(),fd=today.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-        document.getElementById('printDateStock').textContent=`Stock Date: ${fd}`;
-        const dateInput=document.getElementById('collectionDate'),yyyy=today.getFullYear(),mm=String(today.getMonth()+1).padStart(2,'0'),dd=String(today.getDate()).padStart(2,'0');dateInput.value=`${yyyy}-${mm}-${dd}`;
-        
-        document.getElementById('addBagForm').addEventListener('submit',function(event){
+    const today = new Date();
+    document.getElementById('printDateStock').textContent = `Stock Date: ${today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    
+    if (!isPublic) {
+        const dateInput = document.getElementById('collectionDate');
+        dateInput.value = today.toISOString().slice(0, 10);
+        document.getElementById('addBagForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const prefix=document.getElementById('bagPrefix').value,number=document.getElementById('bagNumber').value.trim(),fullBagNum=prefix+number,group=document.getElementById('bloodGroup').value,colDate=document.getElementById('collectionDate').value,volume=parseInt(document.getElementById('volume').value,10),remarks=document.getElementById('remarks').value.trim();
-            if(number===""){alert("Please enter a Bag Number.");return;}
-            
-            // This is now an async function
-            addBag(fullBagNum,group,colDate,volume,remarks);
-            
-            document.getElementById('bagNumber').value='';
-            document.getElementById('remarks').value='';
+            const prefix = document.getElementById('bagPrefix').value;
+            const number = document.getElementById('bagNumber').value.trim();
+            const fullBagNum = prefix + number;
+            const group = document.getElementById('bloodGroup').value;
+            const colDate = document.getElementById('collectionDate').value;
+            const volume = parseInt(document.getElementById('volume').value, 10);
+            const remarks = document.getElementById('remarks').value.trim();
+            if (number === "") { alert("Please enter a Bag Number."); return; }
+            addBag(fullBagNum, group, colDate, volume, remarks);
+            document.getElementById('bagNumber').value = '';
+            document.getElementById('remarks').value = '';
             document.getElementById('bagNumber').focus();
         });
-        
-        // --- KEY CHANGE ---
-        // Instead of loadLedger(), we start the real-time listener
-        listenForUpdates();
-    });
-    </script>
+    }
+
+    listenForUpdates(isPublic);
+});
+</script>
 </body>
 </html>
+
